@@ -58,6 +58,31 @@ func TestDetectTranscriber(t *testing.T) {
 			wantName: "audio-model",
 		},
 		{
+			name: "voice model name selects azure audio model transcriber",
+			cfg: &config.Config{
+				Voice: config.VoiceConfig{ModelName: "voice-azure-audio"},
+				ModelList: []config.ModelConfig{
+					{
+						ModelName: "voice-azure-audio",
+						Model:     "azure/my-audio-deployment",
+						APIKey:    "sk-azure",
+						APIBase:   "https://example.openai.azure.com",
+					},
+				},
+			},
+			wantName: "audio-model",
+		},
+		{
+			name: "voice model name with non openai compatible protocol does not select audio model transcriber",
+			cfg: &config.Config{
+				Voice: config.VoiceConfig{ModelName: "voice-anthropic"},
+				ModelList: []config.ModelConfig{
+					{ModelName: "voice-anthropic", Model: "anthropic/claude-sonnet-4.6", APIKey: "sk-anthropic"},
+				},
+			},
+			wantNil: true,
+		},
+		{
 			name: "groq model list entry without key is skipped",
 			cfg: &config.Config{
 				ModelList: []config.ModelConfig{

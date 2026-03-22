@@ -5,7 +5,6 @@ import (
 	"encoding/base64"
 	"fmt"
 	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/sipeed/picoclaw/pkg/config"
@@ -23,25 +22,6 @@ type AudioModelTranscriber struct {
 const (
 	defaultTranscriptionPrompt = "Transcribe this audio."
 )
-
-func audioFormat(path string) (string, error) {
-	switch strings.ToLower(filepath.Ext(strings.TrimPrefix(path, "file://"))) {
-	case ".wav":
-		return "wav", nil
-	case ".mp3":
-		return "mp3", nil
-	case ".aiff", ".aif":
-		return "aiff", nil
-	case ".aac":
-		return "aac", nil
-	case ".ogg":
-		return "ogg", nil
-	case ".flac":
-		return "flac", nil
-	default:
-		return "", fmt.Errorf("unsupported audio format for %q", path)
-	}
-}
 
 func NewAudioModelTranscriber(modelCfg *config.ModelConfig) *AudioModelTranscriber {
 	if modelCfg == nil {
@@ -79,7 +59,7 @@ func (t *AudioModelTranscriber) Transcribe(ctx context.Context, audioFilePath st
 		return nil, fmt.Errorf("failed to read audio file: %w", err)
 	}
 
-	format, err := audioFormat(audioFilePath)
+	format, err := utils.AudioFormat(audioFilePath)
 	if err != nil {
 		logger.ErrorCF("voice", "Failed to detect audio format", map[string]any{"path": audioFilePath, "error": err})
 		return nil, err
