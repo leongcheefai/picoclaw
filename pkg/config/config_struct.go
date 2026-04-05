@@ -274,7 +274,7 @@ func resolveKey(v string) (string, error) {
 	if resolver == nil {
 		resolver = credential.NewResolver("")
 	}
-	if strings.HasPrefix(v, "enc://") || strings.HasPrefix(v, "file://") {
+	if strings.HasPrefix(v, "enc://") || strings.HasPrefix(v, "file://") || strings.HasPrefix(v, "env://") {
 		decrypted, err := resolver.Resolve(v)
 		if err != nil {
 			logger.Errorf("Resolve error: %v", err)
