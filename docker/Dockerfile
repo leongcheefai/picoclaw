@@ -43,7 +43,5 @@ RUN /usr/local/bin/picoclaw onboard
 ENTRYPOINT ["/bin/sh", "-c", "\
   export PICOCLAW_GATEWAY_HOST=${PICOCLAW_GATEWAY_HOST:-0.0.0.0} \
          PICOCLAW_GATEWAY_PORT=${PICOCLAW_GATEWAY_PORT:-${PORT:-18790}} && \
-  echo \"[entrypoint] HOST=$PICOCLAW_GATEWAY_HOST PORT=$PICOCLAW_GATEWAY_PORT (railway PORT=$PORT)\" && \
-  echo \"[entrypoint] config=$(cat $HOME/.picoclaw/config.json 2>&1 | head -5)\" && \
   exec picoclaw gateway --allow-empty 2>&1\
 "]
