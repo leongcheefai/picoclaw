@@ -14,13 +14,13 @@
   "model_list": [
     {
       "model_name": "claude-haiku",
-      "model": "anthropic/claude-haiku-4.5",
+      "model": "anthropic-messages/claude-haiku-4-5-20251001",
       "api_keys": ["env://ANTHROPIC_API_KEY"],
       "enabled": true
     },
     {
       "model_name": "claude-sonnet",
-      "model": "anthropic/claude-sonnet-4.6",
+      "model": "anthropic-messages/claude-sonnet-4-6-20250514",
       "api_keys": ["env://ANTHROPIC_API_KEY"],
       "enabled": true
     },
