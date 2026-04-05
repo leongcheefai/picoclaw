@@ -14,13 +14,13 @@
   "model_list": [
     {
       "model_name": "claude-haiku",
-      "model": "openrouter/anthropic/claude-3.5-haiku",
+      "model": "openrouter/anthropic/claude-haiku-4.5",
       "api_keys": ["env://OPENROUTER_API_KEY"],
       "enabled": true
     },
     {
       "model_name": "claude-sonnet",
-      "model": "openrouter/anthropic/claude-sonnet-4",
+      "model": "openrouter/anthropic/claude-sonnet-4.6",
       "api_keys": ["env://OPENROUTER_API_KEY"],
       "enabled": true
     },
@@ -44,13 +44,19 @@
     },
     {
       "model_name": "gemini-flash",
-      "model": "openrouter/google/gemini-2.0-flash-exp",
+      "model": "openrouter/google/gemini-2.5-flash",
       "api_keys": ["env://OPENROUTER_API_KEY"],
       "enabled": true
     },
     {
       "model_name": "llama-3.3-70b",
       "model": "openrouter/meta-llama/llama-3.3-70b-instruct",
+      "api_keys": ["env://OPENROUTER_API_KEY"],
+      "enabled": true
+    },
+    {
+      "model_name": "llama-free",
+      "model": "openrouter/meta-llama/llama-3.3-70b-instruct:free",
       "api_keys": ["env://OPENROUTER_API_KEY"],
       "enabled": true
     }
