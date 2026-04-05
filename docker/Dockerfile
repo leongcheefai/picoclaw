@@ -24,7 +24,7 @@ RUN apk add --no-cache ca-certificates tzdata curl
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget -q --spider http://localhost:18790/health || exit 1
+  CMD wget -q --spider http://localhost:${PICOCLAW_GATEWAY_PORT:-18790}/health || exit 1
 
 # Copy binary
 COPY --from=builder /src/build/picoclaw /usr/local/bin/picoclaw
