@@ -4,8 +4,8 @@
     "defaults": {
       "workspace": "~/.picoclaw/workspace",
       "restrict_to_workspace": true,
-      "model_name": "claude-haiku",
-      "max_tokens": 8192,
+      "model_name": "qwen-free",
+      "max_tokens": 4096,
       "max_tool_iterations": 20,
       "summarize_message_threshold": 20,
       "summarize_token_percent": 75
@@ -57,6 +57,18 @@
     {
       "model_name": "llama-free",
       "model": "openrouter/meta-llama/llama-3.3-70b-instruct:free",
+      "api_keys": ["env://OPENROUTER_API_KEY"],
+      "enabled": true
+    },
+    {
+      "model_name": "qwen-free",
+      "model": "openrouter/qwen/qwen3.6-plus:free",
+      "api_keys": ["env://OPENROUTER_API_KEY"],
+      "enabled": true
+    },
+    {
+      "model_name": "gpt-oss-free",
+      "model": "openrouter/openai/gpt-oss-120b:free",
       "api_keys": ["env://OPENROUTER_API_KEY"],
       "enabled": true
     }
