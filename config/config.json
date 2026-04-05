@@ -80,7 +80,6 @@
   },
   "gateway": {
     "host": "0.0.0.0",
-    "port": 18790,
     "log_level": "warn"
   }
 }
