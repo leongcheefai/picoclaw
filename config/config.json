@@ -4,8 +4,8 @@
     "defaults": {
       "workspace": "~/.picoclaw/workspace",
       "restrict_to_workspace": true,
-      "model_name": "qwen-free",
-      "max_tokens": 4096,
+      "model_name": "claude-haiku",
+      "max_tokens": 8192,
       "max_tool_iterations": 20,
       "summarize_message_threshold": 20,
       "summarize_token_percent": 75
@@ -14,62 +14,26 @@
   "model_list": [
     {
       "model_name": "claude-haiku",
-      "model": "openrouter/anthropic/claude-haiku-4.5",
-      "api_keys": ["env://OPENROUTER_API_KEY"],
+      "model": "anthropic/claude-haiku-4.5",
+      "api_keys": ["env://ANTHROPIC_API_KEY"],
       "enabled": true
     },
     {
       "model_name": "claude-sonnet",
-      "model": "openrouter/anthropic/claude-sonnet-4.6",
-      "api_keys": ["env://OPENROUTER_API_KEY"],
+      "model": "anthropic/claude-sonnet-4.6",
+      "api_keys": ["env://ANTHROPIC_API_KEY"],
       "enabled": true
     },
     {
       "model_name": "gpt-4o",
-      "model": "openrouter/openai/gpt-4o",
-      "api_keys": ["env://OPENROUTER_API_KEY"],
+      "model": "openai/gpt-4o",
+      "api_keys": ["env://OPENAI_API_KEY"],
       "enabled": true
     },
     {
       "model_name": "gpt-4o-mini",
-      "model": "openrouter/openai/gpt-4o-mini",
-      "api_keys": ["env://OPENROUTER_API_KEY"],
-      "enabled": true
-    },
-    {
-      "model_name": "deepseek-chat",
-      "model": "openrouter/deepseek/deepseek-chat",
-      "api_keys": ["env://OPENROUTER_API_KEY"],
-      "enabled": true
-    },
-    {
-      "model_name": "gemini-flash",
-      "model": "openrouter/google/gemini-2.5-flash",
-      "api_keys": ["env://OPENROUTER_API_KEY"],
-      "enabled": true
-    },
-    {
-      "model_name": "llama-3.3-70b",
-      "model": "openrouter/meta-llama/llama-3.3-70b-instruct",
-      "api_keys": ["env://OPENROUTER_API_KEY"],
-      "enabled": true
-    },
-    {
-      "model_name": "llama-free",
-      "model": "openrouter/meta-llama/llama-3.3-70b-instruct:free",
-      "api_keys": ["env://OPENROUTER_API_KEY"],
-      "enabled": true
-    },
-    {
-      "model_name": "qwen-free",
-      "model": "openrouter/qwen/qwen3.6-plus:free",
-      "api_keys": ["env://OPENROUTER_API_KEY"],
-      "enabled": true
-    },
-    {
-      "model_name": "gpt-oss-free",
-      "model": "openrouter/openai/gpt-oss-120b:free",
-      "api_keys": ["env://OPENROUTER_API_KEY"],
+      "model": "openai/gpt-4o-mini",
+      "api_keys": ["env://OPENAI_API_KEY"],
       "enabled": true
     }
   ],
