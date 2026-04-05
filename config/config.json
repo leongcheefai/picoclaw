@@ -15,43 +15,43 @@
     {
       "model_name": "claude-haiku",
       "model": "openrouter/anthropic/claude-3.5-haiku",
-      "api_key": "env://OPENROUTER_API_KEY",
+      "api_keys": ["env://OPENROUTER_API_KEY"],
       "enabled": true
     },
     {
       "model_name": "claude-sonnet",
       "model": "openrouter/anthropic/claude-sonnet-4",
-      "api_key": "env://OPENROUTER_API_KEY",
+      "api_keys": ["env://OPENROUTER_API_KEY"],
       "enabled": true
     },
     {
       "model_name": "gpt-4o",
       "model": "openrouter/openai/gpt-4o",
-      "api_key": "env://OPENROUTER_API_KEY",
+      "api_keys": ["env://OPENROUTER_API_KEY"],
       "enabled": true
     },
     {
       "model_name": "gpt-4o-mini",
       "model": "openrouter/openai/gpt-4o-mini",
-      "api_key": "env://OPENROUTER_API_KEY",
+      "api_keys": ["env://OPENROUTER_API_KEY"],
       "enabled": true
     },
     {
       "model_name": "deepseek-chat",
       "model": "openrouter/deepseek/deepseek-chat",
-      "api_key": "env://OPENROUTER_API_KEY",
+      "api_keys": ["env://OPENROUTER_API_KEY"],
       "enabled": true
     },
     {
       "model_name": "gemini-flash",
       "model": "openrouter/google/gemini-2.0-flash-exp",
-      "api_key": "env://OPENROUTER_API_KEY",
+      "api_keys": ["env://OPENROUTER_API_KEY"],
       "enabled": true
     },
     {
       "model_name": "llama-3.3-70b",
       "model": "openrouter/meta-llama/llama-3.3-70b-instruct",
-      "api_key": "env://OPENROUTER_API_KEY",
+      "api_keys": ["env://OPENROUTER_API_KEY"],
       "enabled": true
     }
   ],
