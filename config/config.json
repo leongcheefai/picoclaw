@@ -50,7 +50,7 @@
   "tools": {
     "web": {
       "enabled": true,
-      "prefer_native": true,
+      "prefer_native": false,
       "duckduckgo": {
         "enabled": true,
         "max_results": 5
