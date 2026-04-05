@@ -2,7 +2,7 @@
 .gitignore
 build/
 .picoclaw/
-config/
+config/config.example.json
 .env
 .env.example
 *.md
