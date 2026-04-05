@@ -16,7 +16,7 @@ cmd/**/workspace
 
 # PicoClaw
 .picoclaw/
-config.json
+# config.json  # safe to commit — secrets use env:// references
 sessions/
 build/
 

@@ -1,0 +1,86 @@
+{
+  "version": 2,
+  "agents": {
+    "defaults": {
+      "workspace": "~/.picoclaw/workspace",
+      "restrict_to_workspace": true,
+      "model_name": "claude-haiku",
+      "max_tokens": 8192,
+      "max_tool_iterations": 20,
+      "summarize_message_threshold": 20,
+      "summarize_token_percent": 75
+    }
+  },
+  "model_list": [
+    {
+      "model_name": "claude-haiku",
+      "model": "openrouter/anthropic/claude-3.5-haiku",
+      "api_key": "env://OPENROUTER_API_KEY",
+      "enabled": true
+    },
+    {
+      "model_name": "claude-sonnet",
+      "model": "openrouter/anthropic/claude-sonnet-4",
+      "api_key": "env://OPENROUTER_API_KEY",
+      "enabled": true
+    },
+    {
+      "model_name": "gpt-4o",
+      "model": "openrouter/openai/gpt-4o",
+      "api_key": "env://OPENROUTER_API_KEY",
+      "enabled": true
+    },
+    {
+      "model_name": "gpt-4o-mini",
+      "model": "openrouter/openai/gpt-4o-mini",
+      "api_key": "env://OPENROUTER_API_KEY",
+      "enabled": true
+    },
+    {
+      "model_name": "deepseek-chat",
+      "model": "openrouter/deepseek/deepseek-chat",
+      "api_key": "env://OPENROUTER_API_KEY",
+      "enabled": true
+    },
+    {
+      "model_name": "gemini-flash",
+      "model": "openrouter/google/gemini-2.0-flash-exp",
+      "api_key": "env://OPENROUTER_API_KEY",
+      "enabled": true
+    },
+    {
+      "model_name": "llama-3.3-70b",
+      "model": "openrouter/meta-llama/llama-3.3-70b-instruct",
+      "api_key": "env://OPENROUTER_API_KEY",
+      "enabled": true
+    }
+  ],
+  "channels": {
+    "telegram": {
+      "enabled": true,
+      "allow_from": ["622633935"],
+      "streaming": {
+        "enabled": true,
+        "throttle_seconds": 3
+      }
+    }
+  },
+  "tools": {
+    "web": {
+      "enabled": true,
+      "prefer_native": true,
+      "duckduckgo": {
+        "enabled": true,
+        "max_results": 5
+      }
+    },
+    "exec": {
+      "enabled": true
+    }
+  },
+  "gateway": {
+    "host": "0.0.0.0",
+    "port": 18790,
+    "log_level": "warn"
+  }
+}
