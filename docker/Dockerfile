@@ -40,7 +40,7 @@ USER picoclaw
 RUN /usr/local/bin/picoclaw onboard
 
 # Copy custom config (uses env:// references for secrets)
-COPY --chown=picoclaw:picoclaw config/config.json /home/picoclaw/.picoclaw/config.json
+COPY --from=builder --chown=picoclaw:picoclaw /src/config/config.json /home/picoclaw/.picoclaw/config.json
 
 # Railway injects PORT; map it to picoclaw env vars if not already set.
 ENTRYPOINT ["/bin/sh", "-c", "\
