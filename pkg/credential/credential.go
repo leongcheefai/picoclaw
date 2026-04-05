@@ -8,6 +8,7 @@
 //
 //   - Plaintext:   "sk-abc123"          → returned as-is
 //   - File ref:    "file://filename.key" → content read from configDir/filename.key
+//   - Env ref:     "env://VAR_NAME"     → value read from environment variable VAR_NAME
 //   - Encrypted:   "enc://<base64>"     → AES-256-GCM decrypt via PICOCLAW_KEY_PASSPHRASE
 //   - Empty:       ""                   → returned as-is (auth_method=oauth etc.)
 //
@@ -77,6 +78,7 @@ const picoclawHome = "PICOCLAW_HOME"
 const (
 	FileScheme = "file://"
 	EncScheme  = "enc://"
+	EnvScheme  = "env://"
 
 	hkdfInfo = "picoclaw-credential-v1"
 	saltLen  = 16
@@ -107,6 +109,8 @@ func NewResolver(configDir string) *Resolver {
 //
 //   - ""                → "" (no error; auth_method=oauth needs no key)
 //   - "file://name.key" → trimmed content of configDir/name.key
+//   - "env://VAR_NAME"  → value of environment variable VAR_NAME
+//   - "enc://..."       → AES-256-GCM decrypted value
 //   - anything else     → raw unchanged (plaintext credential)
 func (r *Resolver) Resolve(raw string) (string, error) {
 	if raw == "" {
@@ -142,6 +146,18 @@ func (r *Resolver) Resolve(raw string) (string, error) {
 			return "", fmt.Errorf("credential: credential file %q is empty", realKeyPath)
 		}
 
+		return value, nil
+	}
+
+	if strings.HasPrefix(raw, EnvScheme) {
+		envVar := strings.TrimSpace(strings.TrimPrefix(raw, EnvScheme))
+		if envVar == "" {
+			return "", fmt.Errorf("credential: env:// reference has no variable name")
+		}
+		value := os.Getenv(envVar)
+		if value == "" {
+			return "", fmt.Errorf("credential: environment variable %q is empty or not set", envVar)
+		}
 		return value, nil
 	}
 

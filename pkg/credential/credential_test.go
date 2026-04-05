@@ -221,6 +221,35 @@ func TestDeriveKey_SSHKeyNotFound(t *testing.T) {
 	}
 }
 
+func TestResolve_EnvKey_Success(t *testing.T) {
+	t.Setenv("TEST_API_KEY", "sk-or-v1-from-env")
+	r := credential.NewResolver(t.TempDir())
+	got, err := r.Resolve("env://TEST_API_KEY")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if got != "sk-or-v1-from-env" {
+		t.Fatalf("got %q, want %q", got, "sk-or-v1-from-env")
+	}
+}
+
+func TestResolve_EnvKey_NotSet(t *testing.T) {
+	t.Setenv("TEST_MISSING_KEY", "")
+	r := credential.NewResolver(t.TempDir())
+	_, err := r.Resolve("env://TEST_MISSING_KEY")
+	if err == nil {
+		t.Fatal("expected error for empty env var, got nil")
+	}
+}
+
+func TestResolve_EnvKey_EmptyName(t *testing.T) {
+	r := credential.NewResolver(t.TempDir())
+	_, err := r.Resolve("env://")
+	if err == nil {
+		t.Fatal("expected error for empty env var name, got nil")
+	}
+}
+
 // TestResolve_FileRef_PathTraversal verifies that file:// references cannot escape configDir
 // via relative traversal ("../../etc/passwd") or absolute paths ("/abs/path").
 func TestResolve_FileRef_PathTraversal(t *testing.T) {

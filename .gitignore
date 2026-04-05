@@ -24,7 +24,7 @@ build/
 
 # Secrets & Config (keep templates, ignore actual secrets)
 .env
-config/config.json
+# config/config.json  # safe to commit — secrets use env:// references
 .security.yml
 onboard
 
