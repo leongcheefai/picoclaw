@@ -306,3 +306,31 @@ func TestSanitizeHistoryForProvider_PartialToolResultsInMiddle(t *testing.T) {
 	}
 	assertRoles(t, result, "user", "assistant", "tool", "assistant", "user", "user", "assistant", "tool", "assistant")
 }
+
+func TestSanitizeHistoryForProvider_OrphanedToolResultID(t *testing.T) {
+	// Simulates post-compression state: tool_result references a tool_use_id
+	// that belonged to a compressed-away assistant message. The preceding
+	// assistant has different tool_use IDs.
+	history := []providers.Message{
+		msg("user", "hello"),
+		assistantWithTools("A", "B"),
+		toolResult("A"),
+		toolResult("B"),
+		toolResult("ORPHAN"), // from a compressed-away assistant
+		msg("assistant", "done"),
+	}
+
+	result := sanitizeHistoryForProvider(history)
+	// ORPHAN should be dropped; the rest should remain
+	if len(result) != 5 {
+		t.Fatalf("expected 5 messages, got %d: %+v", len(result), roles(result))
+	}
+	assertRoles(t, result, "user", "assistant", "tool", "tool", "assistant")
+	// Verify the kept tool results are A and B, not ORPHAN
+	if result[2].ToolCallID != "A" {
+		t.Errorf("expected tool result A, got %s", result[2].ToolCallID)
+	}
+	if result[3].ToolCallID != "B" {
+		t.Errorf("expected tool result B, got %s", result[3].ToolCallID)
+	}
+}

@@ -682,11 +682,14 @@ func sanitizeHistoryForProvider(history []providers.Message) []providers.Message
 	}
 
 	// Second pass: ensure every assistant message with tool_calls has matching
-	// tool result messages following it. This is required by strict providers
-	// like DeepSeek that enforce: "An assistant message with 'tool_calls' must
-	// be followed by tool messages responding to each 'tool_call_id'."
+	// tool result messages following it, AND every tool result references a
+	// tool_use_id from the immediately preceding assistant message. This is
+	// required by Anthropic ("Each tool_result block must have a corresponding
+	// tool_use block in the previous message") and DeepSeek.
 	final := make([]providers.Message, 0, len(sanitized))
 	seenToolCallID := make(map[string]bool)
+	// Track the set of valid tool_call IDs from the most recent assistant message
+	var currentToolCallIDs map[string]bool
 	for i := 0; i < len(sanitized); i++ {
 		msg := sanitized[i]
 
@@ -694,6 +697,13 @@ func sanitizeHistoryForProvider(history []providers.Message) []providers.Message
 		if msg.Role == "tool" && msg.ToolCallID != "" {
 			if seenToolCallID[msg.ToolCallID] {
 				logger.DebugCF("agent", "Dropping duplicate tool result", map[string]any{
+					"tool_call_id": msg.ToolCallID,
+				})
+				continue
+			}
+			// Drop tool results whose tool_use_id doesn't match the preceding assistant
+			if currentToolCallIDs != nil && !currentToolCallIDs[msg.ToolCallID] {
+				logger.DebugCF("agent", "Dropping orphaned tool result with unmatched tool_use_id", map[string]any{
 					"tool_call_id": msg.ToolCallID,
 				})
 				continue
@@ -708,7 +718,7 @@ func sanitizeHistoryForProvider(history []providers.Message) []providers.Message
 				expected[tc.ID] = false
 			}
 
-			// Check following messages for matching tool results
+			// Check following messages for matching tool results (only count matching ones)
 			toolMsgCount := 0
 			for j := i + 1; j < len(sanitized); j++ {
 				if sanitized[j].Role != "tool" {
@@ -741,8 +751,18 @@ func sanitizeHistoryForProvider(history []providers.Message) []providers.Message
 			if !allFound {
 				// Skip this assistant message and its tool messages
 				i += toolMsgCount
+				currentToolCallIDs = nil
 				continue
 			}
+
+			// Set current valid tool_call IDs for filtering following tool results
+			currentToolCallIDs = make(map[string]bool, len(msg.ToolCalls))
+			for _, tc := range msg.ToolCalls {
+				currentToolCallIDs[tc.ID] = true
+			}
+		} else if msg.Role != "tool" {
+			// Reset when we move past a tool sequence
+			currentToolCallIDs = nil
 		}
 		final = append(final, msg)
 	}
