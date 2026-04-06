@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strings"
 
 	"github.com/sipeed/picoclaw/pkg/config"
@@ -128,6 +129,16 @@ func NewAgentInstance(
 		agentName = agentCfg.Name
 		subagents = agentCfg.Subagents
 		skillsFilter = agentCfg.Skills
+	}
+
+	// Merge skills declared in AGENT.md frontmatter into the filter so they
+	// are always active without requiring config.json duplication.
+	if def := contextBuilder.LoadAgentDefinition(); def.Agent != nil {
+		for _, s := range def.Agent.Frontmatter.Skills {
+			if s = strings.TrimSpace(s); s != "" && !slices.Contains(skillsFilter, s) {
+				skillsFilter = append(skillsFilter, s)
+			}
+		}
 	}
 
 	maxIter := defaults.MaxToolIterations
