@@ -34,21 +34,31 @@ RUN addgroup -g 1000 picoclaw && \
     adduser -D -u 1000 -G picoclaw picoclaw && \
     mkdir -p /data && chown picoclaw:picoclaw /data
 
-# Run onboard as picoclaw user to create initial directories and config
+# Set PICOCLAW_HOME so config, workspace, and skills all resolve to /data
+# regardless of what the user's home directory is. This is the canonical
+# location for Railway (persistent volume) and docker-compose (bind mount).
+ENV PICOCLAW_HOME=/data
+
+# Run onboard to create initial directories, config, and workspace templates
 USER picoclaw
 RUN /usr/local/bin/picoclaw onboard
 USER root
 
-# Copy custom config (uses env:// references for secrets, no cache)
-COPY --from=builder --chown=picoclaw:picoclaw /src/config/config.json /home/picoclaw/.picoclaw/config.json
-
-# Copy workspace (AGENT.md, SOUL.md, skills, etc.)
-COPY --from=builder --chown=picoclaw:picoclaw /src/workspace/ /home/picoclaw/.picoclaw/workspace/
+# Stage the workspace and config in a known image-only path so they survive
+# persistent volume mounts. The entrypoint syncs them to /data on every boot.
+COPY --from=builder --chown=picoclaw:picoclaw /src/config/config.json /opt/picoclaw/config.json
+COPY --from=builder --chown=picoclaw:picoclaw /src/workspace/ /opt/picoclaw/workspace/
 
 # Railway injects PORT; map it to picoclaw env vars if not already set.
 # Start as root to fix /data volume permissions, then drop to picoclaw.
+# Sync workspace and config from the image to /data on every boot so that
+# new skills, AGENT.md changes, etc. take effect even with a persistent volume.
 ENTRYPOINT ["/bin/sh", "-c", "\
   if [ -d /data ]; then chown -R picoclaw:picoclaw /data; fi && \
+  cp -f /opt/picoclaw/config.json /data/config.json && \
+  mkdir -p /data/workspace && \
+  cp -rf /opt/picoclaw/workspace/* /data/workspace/ && \
+  chown -R picoclaw:picoclaw /data && \
   export PICOCLAW_GATEWAY_HOST=${PICOCLAW_GATEWAY_HOST:-0.0.0.0} \
          PICOCLAW_GATEWAY_PORT=${PICOCLAW_GATEWAY_PORT:-${PORT:-18790}} && \
   exec su-exec picoclaw picoclaw gateway --allow-empty 2>&1\
