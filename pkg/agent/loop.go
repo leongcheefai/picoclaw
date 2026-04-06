@@ -2068,7 +2068,8 @@ turnLoop:
 				strings.Contains(errMsg, "max_tokens") ||
 				strings.Contains(errMsg, "invalidparameter") ||
 				strings.Contains(errMsg, "prompt is too long") ||
-				strings.Contains(errMsg, "request too large"))
+				strings.Contains(errMsg, "request too large") ||
+				strings.Contains(errMsg, "tool_use_id"))
 
 			if isTimeoutError && retry < maxRetries {
 				backoff := time.Duration(retry+1) * 5 * time.Second

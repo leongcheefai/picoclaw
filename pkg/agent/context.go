@@ -701,8 +701,10 @@ func sanitizeHistoryForProvider(history []providers.Message) []providers.Message
 				})
 				continue
 			}
-			// Drop tool results whose tool_use_id doesn't match the preceding assistant
-			if currentToolCallIDs != nil && !currentToolCallIDs[msg.ToolCallID] {
+			// Drop tool results whose tool_use_id doesn't match the preceding assistant.
+			// When currentToolCallIDs is nil, no preceding assistant with tool_calls
+			// was seen — the tool result is orphaned and must be dropped.
+			if currentToolCallIDs == nil || !currentToolCallIDs[msg.ToolCallID] {
 				logger.DebugCF("agent", "Dropping orphaned tool result with unmatched tool_use_id", map[string]any{
 					"tool_call_id": msg.ToolCallID,
 				})

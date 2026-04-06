@@ -278,6 +278,11 @@ func buildRequestBody(
 		}
 	}
 
+	// Safety net: drop orphaned tool_result blocks that reference tool_use_ids
+	// not present in the immediately preceding assistant message. This prevents
+	// Anthropic 400 errors ("unexpected tool_use_id found in tool_result blocks").
+	apiMessages = sanitizeToolResultPairing(apiMessages)
+
 	result["messages"] = apiMessages
 
 	// Set system prompt if present
@@ -291,6 +296,72 @@ func buildRequestBody(
 	}
 
 	return result, nil
+}
+
+// sanitizeToolResultPairing removes orphaned tool_result blocks from user messages
+// that don't reference a tool_use in the immediately preceding assistant message.
+// This is a last-resort safety net before sending to the Anthropic API.
+func sanitizeToolResultPairing(apiMessages []any) []any {
+	for i := 0; i < len(apiMessages); i++ {
+		msg, ok := apiMessages[i].(map[string]any)
+		if !ok || msg["role"] != "user" {
+			continue
+		}
+
+		content, ok := msg["content"].([]map[string]any)
+		if !ok {
+			continue // string content, not tool_result blocks
+		}
+
+		// Check if any content block is a tool_result
+		hasToolResult := false
+		for _, block := range content {
+			if block["type"] == "tool_result" {
+				hasToolResult = true
+				break
+			}
+		}
+		if !hasToolResult {
+			continue
+		}
+
+		// Collect valid tool_use IDs from the preceding assistant message
+		validIDs := map[string]bool{}
+		if i > 0 {
+			if prev, ok := apiMessages[i-1].(map[string]any); ok && prev["role"] == "assistant" {
+				if prevContent, ok := prev["content"].([]any); ok {
+					for _, block := range prevContent {
+						if m, ok := block.(map[string]any); ok && m["type"] == "tool_use" {
+							if id, ok := m["id"].(string); ok {
+								validIDs[id] = true
+							}
+						}
+					}
+				}
+			}
+		}
+
+		// Filter: keep only tool_result blocks with matching tool_use IDs
+		filtered := make([]map[string]any, 0, len(content))
+		for _, block := range content {
+			if block["type"] == "tool_result" {
+				id, _ := block["tool_use_id"].(string)
+				if !validIDs[id] {
+					continue // drop orphaned tool_result
+				}
+			}
+			filtered = append(filtered, block)
+		}
+
+		if len(filtered) == 0 {
+			// All content blocks were orphaned — remove the entire message
+			apiMessages = append(apiMessages[:i], apiMessages[i+1:]...)
+			i--
+		} else if len(filtered) < len(content) {
+			msg["content"] = filtered
+		}
+	}
+	return apiMessages
 }
 
 // buildTools converts tool definitions to Anthropic format.
