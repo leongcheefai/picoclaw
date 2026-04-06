@@ -42,6 +42,9 @@ USER root
 # Copy custom config (uses env:// references for secrets, no cache)
 COPY --from=builder --chown=picoclaw:picoclaw /src/config/config.json /home/picoclaw/.picoclaw/config.json
 
+# Copy workspace (AGENT.md, SOUL.md, skills, etc.)
+COPY --from=builder --chown=picoclaw:picoclaw /src/workspace/ /home/picoclaw/.picoclaw/workspace/
+
 # Railway injects PORT; map it to picoclaw env vars if not already set.
 # Start as root to fix /data volume permissions, then drop to picoclaw.
 ENTRYPOINT ["/bin/sh", "-c", "\
