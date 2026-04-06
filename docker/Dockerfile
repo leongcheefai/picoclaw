@@ -31,7 +31,8 @@ COPY --from=builder /src/build/picoclaw /usr/local/bin/picoclaw
 
 # Create non-root user and group
 RUN addgroup -g 1000 picoclaw && \
-    adduser -D -u 1000 -G picoclaw picoclaw
+    adduser -D -u 1000 -G picoclaw picoclaw && \
+    mkdir -p /data && chown picoclaw:picoclaw /data
 
 # Switch to non-root user
 USER picoclaw
