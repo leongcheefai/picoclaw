@@ -20,7 +20,7 @@ RUN make build
 # ============================================================
 FROM alpine:3.23
 
-RUN apk add --no-cache ca-certificates tzdata curl
+RUN apk add --no-cache ca-certificates tzdata curl su-exec
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
@@ -34,18 +34,19 @@ RUN addgroup -g 1000 picoclaw && \
     adduser -D -u 1000 -G picoclaw picoclaw && \
     mkdir -p /data && chown picoclaw:picoclaw /data
 
-# Switch to non-root user
+# Run onboard as picoclaw user to create initial directories and config
 USER picoclaw
-
-# Run onboard to create initial directories and config
 RUN /usr/local/bin/picoclaw onboard
+USER root
 
 # Copy custom config (uses env:// references for secrets, no cache)
 COPY --from=builder --chown=picoclaw:picoclaw /src/config/config.json /home/picoclaw/.picoclaw/config.json
 
 # Railway injects PORT; map it to picoclaw env vars if not already set.
+# Start as root to fix /data volume permissions, then drop to picoclaw.
 ENTRYPOINT ["/bin/sh", "-c", "\
+  if [ -d /data ]; then chown -R picoclaw:picoclaw /data; fi && \
   export PICOCLAW_GATEWAY_HOST=${PICOCLAW_GATEWAY_HOST:-0.0.0.0} \
          PICOCLAW_GATEWAY_PORT=${PICOCLAW_GATEWAY_PORT:-${PORT:-18790}} && \
-  exec picoclaw gateway --allow-empty 2>&1\
+  exec su-exec picoclaw picoclaw gateway --allow-empty 2>&1\
 "]
