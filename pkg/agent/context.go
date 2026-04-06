@@ -26,6 +26,7 @@ type ContextBuilder struct {
 	toolDiscoveryBM25  bool
 	toolDiscoveryRegex bool
 	splitOnMarker      bool
+	alwaysActiveSkills []string // skills from AGENT.md frontmatter, baked into static prompt
 
 	// Cache for system prompt to avoid rebuilding on every call.
 	// This fixes issue #607: repeated reprocessing of the entire context.
@@ -54,6 +55,14 @@ func (cb *ContextBuilder) WithToolDiscovery(useBM25, useRegex bool) *ContextBuil
 
 func (cb *ContextBuilder) WithSplitOnMarker(enabled bool) *ContextBuilder {
 	cb.splitOnMarker = enabled
+	return cb
+}
+
+// WithAlwaysActiveSkills sets skills that are permanently active (from AGENT.md
+// frontmatter). Their full content is baked into the static system prompt so
+// the model treats them as core instructions, not optional references.
+func (cb *ContextBuilder) WithAlwaysActiveSkills(names []string) *ContextBuilder {
+	cb.alwaysActiveSkills = names
 	return cb
 }
 
@@ -137,6 +146,19 @@ func (cb *ContextBuilder) BuildSystemPrompt() string {
 	bootstrapContent := cb.LoadBootstrapFiles()
 	if bootstrapContent != "" {
 		parts = append(parts, bootstrapContent)
+	}
+
+	// Always-active skills (from AGENT.md frontmatter) — injected as mandatory
+	// instructions in the static prompt so the model treats them as core rules.
+	if len(cb.alwaysActiveSkills) > 0 && cb.skillsLoader != nil {
+		activeContent := cb.skillsLoader.LoadSkillsForContext(cb.alwaysActiveSkills)
+		if strings.TrimSpace(activeContent) != "" {
+			parts = append(parts, fmt.Sprintf(`# Active Skills — MANDATORY
+
+You MUST follow every rule in the skills below. They are hard constraints that override your default behavior. Do not deviate, add extras, or ignore any instruction.
+
+%s`, activeContent))
+		}
 	}
 
 	// Skills - show summary, AI can read full content with read_file tool
@@ -800,6 +822,8 @@ func (cb *ContextBuilder) AddAssistantMessage(
 
 func (cb *ContextBuilder) buildActiveSkillsContext(skillNames []string) string {
 	if cb.skillsLoader == nil || len(skillNames) == 0 {
+		logger.DebugCF("agent", "buildActiveSkillsContext: no skills to inject",
+			map[string]any{"names": skillNames, "loader_nil": cb.skillsLoader == nil})
 		return ""
 	}
 
@@ -808,6 +832,8 @@ func (cb *ContextBuilder) buildActiveSkillsContext(skillNames []string) string {
 	for _, name := range skillNames {
 		canonical, ok := cb.ResolveSkillName(name)
 		if !ok {
+			logger.WarnCF("agent", "buildActiveSkillsContext: skill not resolved",
+				map[string]any{"name": name})
 			continue
 		}
 		if _, exists := seen[canonical]; exists {
@@ -817,17 +843,24 @@ func (cb *ContextBuilder) buildActiveSkillsContext(skillNames []string) string {
 		ordered = append(ordered, canonical)
 	}
 	if len(ordered) == 0 {
+		logger.WarnCF("agent", "buildActiveSkillsContext: no skills resolved from input",
+			map[string]any{"input": skillNames})
 		return ""
 	}
 
 	content := cb.skillsLoader.LoadSkillsForContext(ordered)
 	if strings.TrimSpace(content) == "" {
+		logger.WarnCF("agent", "buildActiveSkillsContext: skill content empty after loading",
+			map[string]any{"ordered": ordered})
 		return ""
 	}
 
-	return fmt.Sprintf(`# Active Skills
+	logger.InfoCF("agent", "Injecting active skills into system prompt",
+		map[string]any{"skills": ordered, "content_len": len(content)})
 
-The following skills are active for this request. Follow them when relevant.
+	return fmt.Sprintf(`# Active Skills — MANDATORY
+
+The following skills are active and their rules MUST be followed strictly. They override your default behavior. Treat every rule inside as a hard constraint — do not deviate, add extras, or use your own judgment to override them.
 
 %s`, content)
 }

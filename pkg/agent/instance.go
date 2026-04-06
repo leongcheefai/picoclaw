@@ -133,11 +133,21 @@ func NewAgentInstance(
 
 	// Merge skills declared in AGENT.md frontmatter into the filter so they
 	// are always active without requiring config.json duplication.
+	// Also bake them into the static system prompt for stronger enforcement.
 	if def := contextBuilder.LoadAgentDefinition(); def.Agent != nil {
+		var frontmatterSkills []string
 		for _, s := range def.Agent.Frontmatter.Skills {
-			if s = strings.TrimSpace(s); s != "" && !slices.Contains(skillsFilter, s) {
-				skillsFilter = append(skillsFilter, s)
+			if s = strings.TrimSpace(s); s != "" {
+				frontmatterSkills = append(frontmatterSkills, s)
+				if !slices.Contains(skillsFilter, s) {
+					skillsFilter = append(skillsFilter, s)
+				}
 			}
+		}
+		if len(frontmatterSkills) > 0 {
+			contextBuilder.WithAlwaysActiveSkills(frontmatterSkills)
+			logger.InfoCF("agent", "Activated AGENT.md frontmatter skills",
+				map[string]any{"skills": frontmatterSkills})
 		}
 	}
 
