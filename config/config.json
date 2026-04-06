@@ -2,7 +2,7 @@
   "version": 2,
   "agents": {
     "defaults": {
-      "workspace": "~/.picoclaw/workspace",
+      "workspace": "",
       "restrict_to_workspace": true,
       "model_name": "claude-haiku",
       "max_tokens": 8192,
