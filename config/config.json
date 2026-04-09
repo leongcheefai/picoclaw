@@ -4,11 +4,17 @@
     "defaults": {
       "workspace": "",
       "restrict_to_workspace": true,
-      "model_name": "claude-haiku",
-      "max_tokens": 4096,
+      "model_name": "claude-sonnet",
+      "max_tokens": 8192,
+      "context_window": 131072,
       "max_tool_iterations": 30,
       "summarize_message_threshold": 12,
-      "summarize_token_percent": 75
+      "summarize_token_percent": 75,
+      "routing": {
+        "enabled": true,
+        "light_model": "claude-haiku",
+        "threshold": 0.5
+      }
     }
   },
   "model_list": [
@@ -24,6 +30,7 @@
       "model": "anthropic-messages/claude-sonnet-4-6-20250514",
       "api_keys": ["env://ANTHROPIC_API_KEY"],
       "tpm": 50000,
+      "thinking_level": "medium",
       "enabled": true
     },
     {

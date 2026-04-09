@@ -28,6 +28,10 @@ build/
 .security.yml
 onboard
 
+# Personal workspace files (lives in Railway /data volume, not in git)
+workspace/USER.md
+workspace/memory/MEMORY.md
+
 
 # Test
 coverage.txt

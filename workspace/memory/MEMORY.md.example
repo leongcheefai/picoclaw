@@ -1,0 +1,14 @@
+# Memory
+
+Long-term notes the agent has gathered about the user, ongoing work, and
+context that should persist across conversations.
+
+The agent will append to this file over time as it learns. It's also fine to
+seed it manually with facts you want the agent to remember from day one.
+
+## Examples of what belongs here
+
+- Recurring projects or interests
+- Decisions you've already made (so the agent doesn't re-ask)
+- People, places, tools you reference often
+- Preferences the agent should respect
