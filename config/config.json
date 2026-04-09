@@ -53,6 +53,11 @@
     "web": {
       "enabled": true,
       "prefer_native": false,
+      "brave": {
+        "enabled": true,
+        "api_keys": ["env://BRAVE_API_KEY"],
+        "max_results": 5
+      },
       "duckduckgo": {
         "enabled": true,
         "max_results": 5
