@@ -95,6 +95,8 @@ func TestCronService_ComputeNextRun(t *testing.T) {
 		wantNil  bool
 	}{
 		{"Valid Cron", CronSchedule{Kind: "cron", Expr: "0 * * * *"}, false},
+		{"Cron With TZ", CronSchedule{Kind: "cron", Expr: "0 9 * * *", TZ: "Asia/Kuala_Lumpur"}, false},
+		{"Cron With Invalid TZ", CronSchedule{Kind: "cron", Expr: "0 9 * * *", TZ: "Invalid/Zone"}, false}, // falls back to local
 		{"Invalid Cron", CronSchedule{Kind: "cron", Expr: "invalid"}, true},
 		{"Every MS", CronSchedule{Kind: "every", EveryMS: int64Ptr(5000)}, false},
 		{"At Future", CronSchedule{Kind: "at", AtMS: int64Ptr(now + 1000)}, false},
@@ -108,6 +110,39 @@ func TestCronService_ComputeNextRun(t *testing.T) {
 				t.Errorf("%s: got %v, wantNil %v", tt.name, got, tt.wantNil)
 			}
 		})
+	}
+}
+
+func TestCronService_ComputeNextRun_TZ(t *testing.T) {
+	cs, path := setupService(nil)
+	defer os.Remove(path)
+
+	// 2024-01-01 at 08:30 UTC — this is 16:30 MYT and 03:30 EST
+	now := time.Date(2024, 1, 1, 8, 30, 0, 0, time.UTC).UnixMilli()
+
+	// "0 9 * * *" = daily at 9:00
+	// In MYT (UTC+8): now is 16:30, next 9:00 MYT = 2024-01-02 09:00 MYT = 2024-01-02 01:00 UTC
+	// In EST (UTC-5): now is 03:30, next 9:00 EST = 2024-01-01 09:00 EST = 2024-01-01 14:00 UTC
+	myt := cs.computeNextRun(&CronSchedule{Kind: "cron", Expr: "0 9 * * *", TZ: "Asia/Kuala_Lumpur"}, now)
+	est := cs.computeNextRun(&CronSchedule{Kind: "cron", Expr: "0 9 * * *", TZ: "America/New_York"}, now)
+
+	if myt == nil || est == nil {
+		t.Fatal("expected non-nil next run times")
+	}
+	if *myt == *est {
+		t.Errorf("different timezones should produce different next run times, both got %d", *myt)
+	}
+
+	mytLoc, _ := time.LoadLocation("Asia/Kuala_Lumpur")
+	expectedMYT := time.Date(2024, 1, 2, 9, 0, 0, 0, mytLoc).UnixMilli()
+	if *myt != expectedMYT {
+		t.Errorf("MYT next run: got %v, want %v", time.UnixMilli(*myt).UTC(), time.UnixMilli(expectedMYT).UTC())
+	}
+
+	estLoc, _ := time.LoadLocation("America/New_York")
+	expectedEST := time.Date(2024, 1, 1, 9, 0, 0, 0, estLoc).UnixMilli()
+	if *est != expectedEST {
+		t.Errorf("EST next run: got %v, want %v", time.UnixMilli(*est).UTC(), time.UnixMilli(expectedEST).UTC())
 	}
 }
 

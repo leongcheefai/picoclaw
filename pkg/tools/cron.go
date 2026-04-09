@@ -110,6 +110,10 @@ func (t *CronTool) Parameters() map[string]any {
 				"type":        "string",
 				"description": "Cron expression for complex recurring schedules (e.g., '0 9 * * *' for daily at 9am). Use this for complex recurring schedules.",
 			},
+			"tz": map[string]any{
+				"type":        "string",
+				"description": "IANA timezone for cron_expr schedules (e.g., 'Asia/Kuala_Lumpur', 'America/New_York', 'UTC'). If not set, the server's local timezone is used. Only applies to cron_expr schedules.",
+			},
 			"job_id": map[string]any{
 				"type":        "string",
 				"description": "Job ID (for remove/enable/disable)",
@@ -182,9 +186,17 @@ func (t *CronTool) addJob(ctx context.Context, args map[string]any) *ToolResult 
 			EveryMS: &everyMS,
 		}
 	} else if hasCron {
+		tz, _ := args["tz"].(string)
+		// Validate timezone if provided
+		if tz != "" {
+			if _, err := time.LoadLocation(tz); err != nil {
+				return ErrorResult(fmt.Sprintf("invalid timezone %q: %v", tz, err))
+			}
+		}
 		schedule = cron.CronSchedule{
 			Kind: "cron",
 			Expr: cronExpr,
+			TZ:   tz,
 		}
 	} else {
 		return ErrorResult("one of at_seconds, every_seconds, or cron_expr is required")
