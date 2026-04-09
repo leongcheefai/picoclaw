@@ -22,10 +22,10 @@ func DefaultConfig() *Config {
 				Workspace:                 workspacePath,
 				RestrictToWorkspace:       true,
 				Provider:                  "",
-				MaxTokens:                 32768,
+				MaxTokens:                 4096,
 				Temperature:               nil, // nil means use provider default
-				MaxToolIterations:         50,
-				SummarizeMessageThreshold: 20,
+				MaxToolIterations:         10,
+				SummarizeMessageThreshold: 12,
 				SummarizeTokenPercent:     75,
 				SteeringMode:              "one-at-a-time",
 				ToolFeedback: ToolFeedbackConfig{

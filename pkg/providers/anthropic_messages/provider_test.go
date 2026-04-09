@@ -86,7 +86,11 @@ func TestBuildRequestBody(t *testing.T) {
 			want: map[string]any{
 				"model":      "test-model",
 				"max_tokens": int64(8192),
-				"system":     "You are a helpful assistant.",
+				"system": []map[string]any{{
+					"type":          "text",
+					"text":          "You are a helpful assistant.",
+					"cache_control": map[string]string{"type": "ephemeral"},
+				}},
 				"messages": []any{
 					map[string]any{
 						"role":    "user",

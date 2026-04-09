@@ -46,6 +46,7 @@ func candidateFromModelConfig(
 		Provider:    ref.Provider,
 		Model:       ref.Model,
 		RPM:         mc.RPM,
+		TPM:         mc.TPM,
 		IdentityKey: modelConfigIdentityKey(mc),
 	}, true
 }

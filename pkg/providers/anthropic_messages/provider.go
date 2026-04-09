@@ -285,9 +285,14 @@ func buildRequestBody(
 
 	result["messages"] = apiMessages
 
-	// Set system prompt if present
+	// Set system prompt if present, using block format with cache_control
+	// to enable Anthropic prompt caching (cached tokens cost ~0.1x input price).
 	if systemPrompt != "" {
-		result["system"] = systemPrompt
+		result["system"] = []map[string]any{{
+			"type":          "text",
+			"text":          systemPrompt,
+			"cache_control": map[string]string{"type": "ephemeral"},
+		}}
 	}
 
 	// Add tools if present

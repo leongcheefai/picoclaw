@@ -805,8 +805,8 @@ func TestLoadConfig_HooksProcessConfig(t *testing.T) {
 func TestDefaultConfig_SummarizationThresholds(t *testing.T) {
 	cfg := DefaultConfig()
 
-	if cfg.Agents.Defaults.SummarizeMessageThreshold != 20 {
-		t.Errorf("SummarizeMessageThreshold = %d, want 20", cfg.Agents.Defaults.SummarizeMessageThreshold)
+	if cfg.Agents.Defaults.SummarizeMessageThreshold != 12 {
+		t.Errorf("SummarizeMessageThreshold = %d, want 12", cfg.Agents.Defaults.SummarizeMessageThreshold)
 	}
 	if cfg.Agents.Defaults.SummarizeTokenPercent != 75 {
 		t.Errorf("SummarizeTokenPercent = %d, want 75", cfg.Agents.Defaults.SummarizeTokenPercent)

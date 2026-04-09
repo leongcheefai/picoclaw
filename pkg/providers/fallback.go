@@ -18,6 +18,7 @@ type FallbackCandidate struct {
 	Provider    string
 	Model       string
 	RPM         int    // requests per minute; 0 means unrestricted
+	TPM         int    // tokens per minute; 0 means unrestricted
 	IdentityKey string // optional stable config identity for cooldown/rate limiting
 }
 
@@ -174,6 +175,32 @@ func (fc *FallbackChain) Execute(
 					return nil, waitErr
 				}
 			}
+
+			// Enforce TPM limit: use a minimal estimate before the call.
+			// The real usage is recorded after the response arrives.
+			const tpmPreflightEstimate = 500
+			if !fc.rl.TPMTryConsume(cooldownKey, tpmPreflightEstimate) {
+				if i < len(candidates)-1 {
+					result.Attempts = append(result.Attempts, FallbackAttempt{
+						Provider: candidate.Provider,
+						Model:    candidate.Model,
+						Skipped:  true,
+						Reason:   FailoverRateLimit,
+						Error:    fmt.Errorf("%s TPM budget exhausted", cooldownKey),
+					})
+					continue
+				}
+				if waitErr := fc.rl.TPMWait(ctx, cooldownKey, tpmPreflightEstimate); waitErr != nil {
+					result.Attempts = append(result.Attempts, FallbackAttempt{
+						Provider: candidate.Provider,
+						Model:    candidate.Model,
+						Skipped:  true,
+						Reason:   FailoverRateLimit,
+						Error:    waitErr,
+					})
+					return nil, waitErr
+				}
+			}
 		}
 
 		// Execute the run function.
@@ -182,7 +209,10 @@ func (fc *FallbackChain) Execute(
 		elapsed := time.Since(start)
 
 		if err == nil {
-			// Success.
+			// Success — record actual token usage for TPM tracking.
+			if fc.rl != nil && resp.Usage != nil {
+				fc.rl.TPMRecord(cooldownKey, resp.Usage.TotalTokens)
+			}
 			fc.cooldown.MarkSuccess(cooldownKey)
 			result.Response = resp
 			result.Provider = candidate.Provider
